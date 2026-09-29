@@ -1,0 +1,427 @@
+You are building the backend foundation of a scientific mathematical discovery platform.
+
+IMPORTANT:
+This is NOT a normal CRUD SaaS.
+The primary goal is to build a reliable scientific computation and experiment engine that can continuously generate, test, validate, store, and retrieve mathematical hypotheses related to Keplerian planetary systems and quantum/hydrogen structure.
+
+Do NOT build the frontend yet.
+Do NOT add an LLM yet.
+Do NOT generate fake scientific results.
+Do NOT claim that any hypothesis is scientifically proven.
+
+==================================================
+PHASE 1 — BACKEND FOUNDATION
+==================================================
+
+Build a production-oriented Python backend with:
+
+- Python 3.11+
+- FastAPI
+- PostgreSQL
+- SQLAlchemy 2.x
+- Alembic
+- Pydantic v2
+- pytest
+- NumPy
+- SciPy
+- SymPy
+- Pint for physical units
+- structured logging
+- environment-based configuration
+
+The architecture must be modular and designed for future continuous scientific computation.
+
+==================================================
+1. PROJECT STRUCTURE
+==================================================
+
+Create a clean architecture similar to:
+
+app/
+    main.py
+
+    api/
+        routes/
+        dependencies.py
+
+    core/
+        config.py
+        logging.py
+        exceptions.py
+
+    db/
+        database.py
+        models/
+        repositories/
+        migrations/
+
+    scientific/
+        physics/
+        mathematics/
+        transformations/
+        discovery/
+        experiments/
+        validation/
+
+    workers/
+        jobs/
+        queue/
+        scheduler/
+
+    schemas/
+        ...
+
+    services/
+        ...
+
+    tests/
+        unit/
+        integration/
+
+Do not create unnecessary abstractions.
+Keep scientific logic independent from FastAPI.
+
+The scientific engine must be usable without the HTTP API.
+
+==================================================
+2. DATABASE
+==================================================
+
+Configure PostgreSQL through environment variables.
+
+Create the database foundation with SQLAlchemy and Alembic.
+
+At this stage create only the core entities required for the foundation:
+
+- Dataset
+- DatasetVersion
+- Experiment
+- ExperimentRun
+- Hypothesis
+- Formula
+- Result
+- Job
+
+Design relationships carefully.
+
+Every experiment and result must be reproducible.
+
+Store:
+
+- UUID primary keys
+- created_at
+- updated_at
+- status
+- metadata where appropriate
+- version information
+
+Use UTC timestamps.
+
+Never store scientific results only in memory.
+
+==================================================
+3. DATA MODEL PRINCIPLES
+==================================================
+
+A Dataset must be versioned.
+
+Example:
+
+Dataset:
+    TRAPPIST-1
+
+DatasetVersion:
+    version 1
+
+If the dataset changes, create a new version instead of silently modifying the old one.
+
+An Experiment must reference an exact DatasetVersion.
+
+An ExperimentRun must reference the exact experiment configuration used.
+
+A Hypothesis must be independently identifiable.
+
+A Formula must preserve both:
+
+1. human-readable mathematical representation
+2. machine-readable symbolic representation
+
+Example:
+
+Human:
+    sqrt(a / a_ref)
+
+Machine:
+    SymPy expression / canonical representation
+
+Do NOT use eval() for mathematical expressions.
+
+==================================================
+4. SCIENTIFIC DATA TYPES
+==================================================
+
+Create strongly typed structures for future scientific variables.
+
+At minimum support:
+
+- mass
+- length
+- time
+- energy
+- velocity
+- momentum
+- angular momentum
+- eccentricity
+- inclination
+- semimajor axis
+- orbital period
+- dimensionless quantities
+
+Use Pint for dimensional consistency.
+
+The system must distinguish:
+
+    5 meters
+
+from:
+
+    5 dimensionless
+
+Never silently mix incompatible physical units.
+
+==================================================
+5. SCIENTIFIC ENGINE INTERFACE
+==================================================
+
+Create interfaces/classes for scientific calculations, but DO NOT implement the full physics engine yet.
+
+For example:
+
+KeplerCalculator
+HydrogenCalculator
+ActionCalculator
+DimensionalAnalyzer
+FormulaEvaluator
+ExperimentRunner
+
+At this phase, implement only minimal smoke-test functionality.
+
+The architecture must allow us to add the real physics formulas in Phase 2 without rewriting the backend.
+
+==================================================
+6. EXPERIMENT REPRODUCIBILITY
+==================================================
+
+Every experiment must record:
+
+- dataset version
+- hypothesis/formula
+- input configuration
+- random seed if randomness is used
+- software version
+- experiment status
+- start time
+- end time
+- result metadata
+
+The same experiment configuration should be reproducible.
+
+Do not use uncontrolled randomness.
+
+==================================================
+7. JOB FOUNDATION
+==================================================
+
+Create the foundation for long-running scientific jobs.
+
+A Job should have states such as:
+
+PENDING
+RUNNING
+COMPLETED
+FAILED
+CANCELLED
+
+Store:
+
+- job id
+- experiment id
+- status
+- attempts
+- started_at
+- finished_at
+- error information
+- heartbeat information
+
+Do NOT build the full worker system yet.
+
+But design the models so Phase 5 can implement persistent workers, retries, checkpoints, and crash recovery.
+
+==================================================
+8. ERROR HANDLING
+==================================================
+
+Scientific computation errors must never silently disappear.
+
+Create structured exceptions for things such as:
+
+- InvalidUnits
+- InvalidFormula
+- InvalidDataset
+- ScientificValidationError
+- ExperimentExecutionError
+
+API errors should return useful structured responses.
+
+Internal logs must contain enough information to diagnose failures.
+
+Never expose secrets.
+
+==================================================
+9. API
+==================================================
+
+Create minimal health endpoints:
+
+GET /health
+GET /health/db
+
+Also create basic read-only endpoints proving that the database connection and application architecture work.
+
+Do not build the complete API yet.
+
+==================================================
+10. TESTING
+==================================================
+
+This is extremely important.
+
+Write tests for:
+
+- application startup
+- database connection
+- Dataset creation
+- DatasetVersion creation
+- Experiment creation
+- Hypothesis creation
+- Formula storage
+- Job lifecycle
+- unit validation
+- basic SymPy expression parsing
+
+The project must pass all tests.
+
+==================================================
+11. DOCKER / LOCAL DEVELOPMENT
+==================================================
+
+Provide a simple development setup for PostgreSQL.
+
+Use environment variables.
+
+Create:
+
+.env.example
+
+Never commit actual secrets.
+
+The project must run in Replit without requiring paid external services.
+
+==================================================
+12. DOCUMENTATION
+==================================================
+
+Create:
+
+README.md
+
+Include:
+
+- architecture
+- setup instructions
+- environment variables
+- database setup
+- migrations
+- running the server
+- running tests
+- project philosophy
+- scientific integrity rules
+
+Clearly state that the platform searches for candidate mathematical relationships and does not automatically establish scientific truth.
+
+==================================================
+13. SCIENTIFIC INTEGRITY RULES
+==================================================
+
+These rules are mandatory:
+
+1. Never fabricate experimental results.
+2. Never modify test data based on results.
+3. Never tune a formula using the test set.
+4. Never label a candidate equation as a scientific law automatically.
+5. Keep training, validation, and test data logically separate.
+6. Preserve experiment history.
+7. Preserve failed experiments.
+8. Never overwrite previous scientific results.
+9. All formulas must be reproducible.
+10. All future discovery algorithms must produce auditable experiment records.
+
+==================================================
+14. IMPORTANT ARCHITECTURAL REQUIREMENT
+==================================================
+
+The backend must be designed so that later phases can add:
+
+Phase 2:
+Real Kepler + Hydrogen physics engine
+
+Phase 3:
+Symbolic formula generation and discovery
+
+Phase 4:
+Experiment runner + validation + scoring
+
+Phase 5:
+Persistent continuous workers + queue + checkpoint/recovery
+
+Phase 6:
+LLM hypothesis-generation agent
+
+Phase 7:
+Scientific API
+
+Phase 8:
+Minimal React frontend
+
+Do NOT implement those phases now.
+
+==================================================
+15. FINAL VERIFICATION
+==================================================
+
+When finished:
+
+1. Run all tests.
+2. Run database migrations.
+3. Start FastAPI.
+4. Test /health.
+5. Test /health/db.
+6. Create a sample dataset.
+7. Create a sample experiment.
+8. Store one symbolic formula.
+9. Create one sample job.
+10. Verify all data persists after restarting the application.
+
+At the end, report:
+
+- files created
+- architecture
+- database tables
+- tests executed
+- test results
+- commands used to run the project
+- any remaining issues
+
+Do not proceed to frontend development.
+Do not add an LLM.
+Do not skip tests just to finish faster.
