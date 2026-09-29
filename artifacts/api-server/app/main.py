@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.routes.health import router as health_router
 from app.api.routes.read_only import router as catalog_router
+from app.api.routes.science import router as science_router
 from app.core.config import get_settings
 from app.core.exceptions import ScientificError
 from app.core.logging import configure_logging
@@ -43,3 +44,4 @@ async def scientific_error_handler(_: Request, exc: ScientificError) -> JSONResp
 
 app.include_router(health_router, prefix="/api")
 app.include_router(catalog_router, prefix="/api")
+app.include_router(science_router, prefix="/api")

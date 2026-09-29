@@ -30,6 +30,7 @@ Python/FastAPI foundation for reproducible scientific computation and auditable 
 - Dataset versions are separate rows and experiments reference exact versions.
 - Phase 1 exposes read-only catalog routes; mutation and worker orchestration remain explicit future work.
 - The scientific package is independent from FastAPI so future calculators can run in jobs or scripts.
+- Phase 2 keeps planetary gravitational coupling separate from hydrogen Coulomb coupling; `n_eff` is always labeled as a dimensionless effective index, never a quantum number.
 
 ## Product
 

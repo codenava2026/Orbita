@@ -1,0 +1,626 @@
+PHASE 2 — SCIENTIFIC PHYSICS ENGINE
+
+The Phase 1 backend foundation is complete and tested.
+
+Now implement the REAL scientific physics layer.
+
+IMPORTANT:
+Do NOT build frontend/UI.
+Do NOT add an LLM.
+Do NOT implement symbolic discovery yet.
+Do NOT invent or fabricate scientific results.
+
+The goal of this phase is to create a deterministic, tested scientific engine for:
+
+1. Keplerian two-body systems
+2. Hydrogen atom
+3. Classical/semiclassical action variables
+4. Dimensionless normalization
+5. Cross-checking known physical relationships
+
+The scientific engine must be usable independently of FastAPI.
+
+==================================================
+1. GENERAL REQUIREMENTS
+==================================================
+
+Use:
+
+- NumPy
+- SciPy where appropriate
+- SymPy
+- Pint
+- Python dataclasses / Pydantic where appropriate
+
+All calculations must be deterministic.
+
+All physical constants must be centralized.
+
+Never hard-code the same physical constant in multiple files.
+
+Create a central constants module.
+
+Use SI internally unless a function explicitly documents another unit system.
+
+Every public scientific function must document:
+
+- input quantities
+- expected units
+- output quantity
+- equation/reference
+- assumptions
+- limitations
+
+==================================================
+2. PHYSICAL CONSTANTS
+==================================================
+
+Create a centralized constants module containing at minimum:
+
+- G
+- hbar
+- h
+- c
+- e
+- epsilon_0
+- electron mass
+- proton mass
+- Earth mass
+- solar mass
+- astronomical unit
+- electron volt
+- Bohr radius
+
+Use authoritative CODATA-compatible values where applicable.
+
+Do not duplicate constants.
+
+Allow future updating/versioning of constants.
+
+==================================================
+3. KEPLER TWO-BODY ENGINE
+==================================================
+
+Implement the relative two-body Kepler problem.
+
+Use:
+
+mu = M1*M2/(M1+M2)
+
+and gravitational parameter:
+
+mu_g = G*(M1+M2)
+
+Implement:
+
+A. Reduced mass
+
+B. Kepler's third law:
+
+T^2 = 4*pi^2*a^3 / (G*(M1+M2))
+
+C. Semimajor axis from period:
+
+a = [G*(M1+M2)*T^2/(4*pi^2)]^(1/3)
+
+D. Total orbital energy:
+
+E = -G*M1*M2/(2*a)
+
+Equivalent reduced-mass formulation must be handled consistently.
+
+E must represent the TOTAL relative orbital mechanical energy.
+
+E. Orbital velocity for a circular orbit:
+
+v = sqrt(G*(M1+M2)/a)
+
+F. Vis-viva equation:
+
+v^2 = G*(M1+M2)*(2/r - 1/a)
+
+G. Orbital angular momentum:
+
+L = mu * sqrt(G*(M1+M2)*a*(1-e^2))
+
+H. Specific angular momentum:
+
+h_specific = sqrt(G*(M1+M2)*a*(1-e^2))
+
+I. Periapsis:
+
+r_p = a*(1-e)
+
+J. Apoapsis:
+
+r_a = a*(1+e)
+
+K. Mean motion:
+
+n_mean = sqrt(G*(M1+M2)/a^3)
+
+L. Orbital period from mean motion:
+
+T = 2*pi/n_mean
+
+==================================================
+4. KEPLER CONSISTENCY CHECKS
+==================================================
+
+Create a consistency validator.
+
+Given enough orbital parameters, verify that:
+
+- period and semimajor axis satisfy Kepler's third law
+- energy agrees with semimajor axis
+- angular momentum agrees with a and e
+- periapsis/apoapsis are physically valid
+- eccentricity satisfies:
+
+0 <= e < 1
+
+for bound elliptical orbits.
+
+The validator must return structured results such as:
+
+{
+    "passed": true,
+    "checks": [...],
+    "relative_errors": {...}
+}
+
+Never silently accept invalid physics.
+
+==================================================
+5. HYDROGEN ENGINE
+==================================================
+
+Implement the non-relativistic hydrogen atom.
+
+Hamiltonian:
+
+H = -hbar^2/(2*mu) * laplacian
+    - e^2/(4*pi*epsilon_0*r)
+
+Use reduced electron-proton mass:
+
+mu = me*mp/(me+mp)
+
+Implement the analytical bound-state energy:
+
+E_n = -mu*k^2/(2*hbar^2*n^2)
+
+where:
+
+k = e^2/(4*pi*epsilon_0)
+
+Also provide the familiar approximate representation:
+
+E_n ≈ -13.6 eV / n^2
+
+but calculate using physical constants internally.
+
+Implement:
+
+energy(n)
+
+energy_ratio(n1, n2)
+
+binding_energy(n)
+
+Bohr radius using the reduced mass:
+
+a0 = hbar^2/(mu*k)
+
+and the characteristic radius:
+
+a_n = n^2*a0
+
+Be explicit that these are hydrogen quantum-state relationships, not classical electron orbits.
+
+==================================================
+6. HYDROGEN QUANTUM NUMBERS
+==================================================
+
+Implement validation for:
+
+n >= 1
+
+0 <= l <= n-1
+
+-l <= m <= l
+
+Implement:
+
+L^2 = l(l+1)hbar^2
+
+L_z = m*hbar
+
+Radial node count:
+
+N_radial = n-l-1
+
+Angular node count:
+
+N_angular = l
+
+Total nodes:
+
+N_total = n-1
+
+Provide deterministic functions for these.
+
+Reject invalid quantum-number combinations.
+
+==================================================
+7. HYDROGEN STATE REPRESENTATION
+==================================================
+
+Create a HydrogenState object containing:
+
+- n
+- l
+- m
+- energy
+- angular_momentum_squared
+- angular_momentum_z
+- radial_nodes
+- angular_nodes
+- total_nodes
+
+Do not numerically solve the Schrödinger equation yet.
+
+Use the known analytical hydrogen solution.
+
+A later phase may add radial wavefunctions and probability densities.
+
+==================================================
+8. KEPLER ↔ HYDROGEN MATHEMATICAL CORRESPONDENCE
+==================================================
+
+Implement the known analytical correspondence carefully.
+
+For a general attractive inverse-square potential:
+
+V(r) = -k/r
+
+define:
+
+Lambda = sqrt(mu*k*a)
+
+For the Coulomb/Kepler problem, implement the action relation:
+
+Lambda = J_r + L
+
+For semiclassical quantization use the Langer-corrected form:
+
+J_r = (n_r + 1/2)*hbar
+
+L = (l + 1/2)*hbar
+
+Therefore:
+
+Lambda = (n_r + l + 1)*hbar
+
+Define:
+
+n = n_r + l + 1
+
+Then derive:
+
+a_n = n^2*hbar^2/(mu*k)
+
+and:
+
+E_n = -mu*k^2/(2*hbar^2*n^2)
+
+IMPORTANT:
+
+Clearly mark this as the KNOWN KEPLER-COULOMB / HYDROGEN CORRESPONDENCE.
+
+It is NOT a newly discovered relationship.
+
+Do not imply that planetary systems are quantum systems.
+
+==================================================
+9. ACTION VARIABLES
+==================================================
+
+Implement a clean ActionCalculator.
+
+Support:
+
+- radial action
+- angular action
+- total Kepler action / Delaunay-like quantities
+
+For the Kepler problem define:
+
+Lambda = sqrt(mu*k*a)
+
+and for orbital angular momentum:
+
+L = mu*sqrt(G*(M1+M2)*a*(1-e^2))
+
+Be extremely careful about the distinction between:
+
+- gravitational Kepler parameter
+- reduced mass
+- specific angular momentum
+- canonical action
+- physical angular momentum
+
+Do not silently mix them.
+
+Document the units of every quantity.
+
+For the planetary Kepler problem use the appropriate gravitational parameter.
+
+For the Coulomb problem use the Coulomb coupling k.
+
+Do NOT force planetary parameters into the hydrogen Coulomb constants.
+
+==================================================
+10. DIMENSIONLESS NORMALIZATION
+==================================================
+
+Create a reusable normalization module.
+
+Support relationships such as:
+
+x_normalized = x / x_reference
+
+Only allow ratios between quantities with compatible dimensions.
+
+Examples:
+
+a/a_ref
+T/T_ref
+|E|/|E_ref|
+L/L_ref
+
+Also support dimensionless quantities such as:
+
+eccentricity
+
+Create validation that rejects invalid normalization.
+
+==================================================
+11. EFFECTIVE N
+==================================================
+
+Implement an explicitly named quantity:
+
+n_eff
+
+IMPORTANT:
+
+n_eff is NOT automatically considered the hydrogen quantum number.
+
+For a reference semimajor axis:
+
+n_eff = sqrt(a/a_ref)
+
+Also support equivalent period scaling:
+
+n_eff = (T/T_ref)^(1/3)
+
+and energy scaling:
+
+n_eff = sqrt(E_ref/E)
+
+when both energies are negative bound-state energies and the ratio is handled correctly.
+
+The implementation must label this as:
+
+"dimensionless effective index"
+
+NOT:
+
+"quantum number"
+
+Provide a comparison function that checks whether multiple definitions of n_eff agree.
+
+==================================================
+12. CROSS-CONSISTENCY TESTS
+==================================================
+
+Create tests demonstrating known relationships.
+
+Examples:
+
+Kepler:
+
+T ∝ a^(3/2)
+
+E ∝ -1/a
+
+L ∝ sqrt(a*(1-e^2))
+
+Hydrogen:
+
+E ∝ -1/n^2
+
+a ∝ n^2
+
+T_formal ∝ n^3
+
+v_formal ∝ 1/n
+
+L_semiclassical ∝ n
+
+Do NOT interpret these formal hydrogen/Kepler scalings as evidence that a real planetary system is an atom.
+
+==================================================
+13. NUMERICAL PRECISION
+==================================================
+
+Use appropriate floating-point tolerances.
+
+Do not compare floating-point values with exact equality unless mathematically symbolic.
+
+Provide:
+
+absolute_error
+relative_error
+
+where appropriate.
+
+Use SymPy for symbolic identities when possible.
+
+==================================================
+14. SCIENTIFIC VALIDATION API
+==================================================
+
+Create a general validation result structure:
+
+ValidationResult:
+
+- passed
+- checks
+- errors
+- warnings
+- assumptions
+- numerical_tolerances
+
+Every scientific validator should return structured information.
+
+==================================================
+15. TEST SUITE
+==================================================
+
+Create extensive unit tests.
+
+At minimum test:
+
+KEPLER:
+
+1. Kepler's third law
+2. inverse calculation of a from T
+3. orbital energy
+4. vis-viva
+5. angular momentum
+6. periapsis
+7. apoapsis
+8. circular orbit
+9. eccentric orbit
+10. invalid eccentricity
+
+HYDROGEN:
+
+11. n=1 energy
+12. n=2 energy
+13. energy ratio
+14. Bohr radius
+15. n/l/m validation
+16. angular momentum
+17. Lz
+18. radial nodes
+19. invalid quantum numbers
+
+CORRESPONDENCE:
+
+20. action relation
+21. n = nr+l+1
+22. a_n ∝ n²
+23. E_n ∝ -1/n²
+
+NORMALIZATION:
+
+24. compatible unit normalization
+25. incompatible unit rejection
+26. n_eff consistency
+
+Use known analytical values where possible.
+
+All tests must pass.
+
+==================================================
+16. SAMPLE SCIENTIFIC DATA
+==================================================
+
+Create small deterministic test fixtures.
+
+Include:
+
+- idealized Kepler orbit
+- hydrogen ground state
+- hydrogen n=2 state
+- hydrogen n=3 state
+
+Do not insert arbitrary planetary data yet unless already present in the database.
+
+Do not fabricate observational measurements.
+
+==================================================
+17. API INTEGRATION
+==================================================
+
+Expose only minimal read-only scientific endpoints for verification.
+
+Examples:
+
+GET /api/science/constants
+
+GET /api/science/hydrogen/energy/{n}
+
+GET /api/science/hydrogen/state/{n}/{l}/{m}
+
+Do NOT expose discovery endpoints yet.
+
+The scientific engine itself must remain independent from the API.
+
+==================================================
+18. DOCUMENTATION
+==================================================
+
+Update README documentation with:
+
+- equations implemented
+- assumptions
+- units
+- distinction between classical orbit and quantum state
+- known Kepler-Hydrogen correspondence
+- meaning of n_eff
+- limitations
+- test coverage
+
+Clearly distinguish:
+
+KNOWN PHYSICS
+
+from:
+
+FUTURE DISCOVERY EXPERIMENTS
+
+==================================================
+19. FINAL VERIFICATION
+==================================================
+
+Before finishing:
+
+1. Run all existing Phase 1 tests.
+2. Run all new Phase 2 tests.
+3. Verify Alembic/database still works.
+4. Start the API.
+5. Test the new scientific endpoints.
+6. Verify no existing functionality was broken.
+7. Run static/type checks if configured.
+
+Do not move to symbolic discovery.
+
+At the end report:
+
+- files created/modified
+- equations implemented
+- scientific assumptions
+- tests executed
+- total tests passed/failed
+- API endpoints added
+- any remaining issues
+
+STOP after Phase 2.
+
+Do not implement Phase 3.
+Do not add an LLM.
+Do not build frontend.

@@ -2,7 +2,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.core.exceptions import ScientificValidationError
+from app.scientific.action import ActionCalculator
 from app.scientific.formula import FormulaEvaluator, ParsedFormula
+from app.scientific.hydrogen import HydrogenCalculator
+from app.scientific.kepler import KeplerCalculator
 from app.scientific.units import ScientificQuantity
 
 
@@ -11,31 +14,6 @@ class CalculationResult:
     calculator: str
     status: str
     details: dict[str, Any]
-
-
-class KeplerCalculator:
-    name = "kepler"
-
-    def validate_inputs(self, semimajor_axis: ScientificQuantity, period: ScientificQuantity) -> None:
-        semimajor_axis.as_pint()
-        period.as_pint()
-
-    def smoke_test(self) -> CalculationResult:
-        return CalculationResult(self.name, "ready", {"physics_implemented": False})
-
-
-class HydrogenCalculator:
-    name = "hydrogen"
-
-    def smoke_test(self) -> CalculationResult:
-        return CalculationResult(self.name, "ready", {"physics_implemented": False})
-
-
-class ActionCalculator:
-    name = "action"
-
-    def smoke_test(self) -> CalculationResult:
-        return CalculationResult(self.name, "ready", {"physics_implemented": False})
 
 
 class DimensionalAnalyzer:
